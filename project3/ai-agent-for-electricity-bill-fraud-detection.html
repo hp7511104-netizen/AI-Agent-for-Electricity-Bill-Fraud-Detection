@@ -1,0 +1,1372 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Agent for Electricity Bill Fraud Detection</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #3b82d4;
+    --blue-dark: #1e4fa8;
+    --blue-light: #60a5fa;
+    --purple: #7c5cd8;
+    --bg: #ffffff;
+    --surface: #f7f8fa;
+    --border: #e5e7eb;
+    --text: #1f2328;
+    --muted: #57606a;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --success: #10b981;
+    --dark: #0d1b2e;
+    --dark2: #112240;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: -apple-system, "Segoe UI", system-ui, sans-serif; font-size: 15px; line-height: 1.6; color: var(--text); background: var(--bg); }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 999;
+    background: rgba(13,27,46,0.97);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(59,130,212,0.3);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 62px;
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .nav-logo-icon {
+    width: 36px; height: 36px; background: linear-gradient(135deg, var(--blue), var(--purple));
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  }
+  .nav-logo-icon svg { width: 20px; height: 20px; fill: #fff; }
+  .nav-brand { font-size: 14px; font-weight: 700; color: #fff; line-height: 1.2; max-width: 200px; }
+  .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+  .nav-links a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 13px; font-weight: 500; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--blue-light); }
+  .nav-cta {
+    background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+    color: #fff; border: none; padding: 8px 18px; border-radius: 6px;
+    font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .nav-cta:hover { opacity: 0.85; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #0d1b2e 0%, #112240 50%, #0f2a4a 100%);
+    min-height: 92vh; display: flex; align-items: center;
+    position: relative; overflow: hidden; padding: 4rem 2rem;
+  }
+  .hero-grid-bg {
+    position: absolute; inset: 0; opacity: 0.07;
+    background-image: linear-gradient(rgba(59,130,212,0.8) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,212,0.8) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+  .hero-glow {
+    position: absolute; width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(59,130,212,0.15) 0%, transparent 70%);
+    top: -100px; right: -100px; pointer-events: none;
+  }
+  .hero-glow2 {
+    position: absolute; width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(124,92,216,0.12) 0%, transparent 70%);
+    bottom: -50px; left: -50px; pointer-events: none;
+  }
+  .hero-inner { max-width: 760px; margin: 0 auto; width: 100%; position: relative; z-index: 2; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(59,130,212,0.15); border: 1px solid rgba(59,130,212,0.4);
+    color: var(--blue-light); font-size: 12px; font-weight: 600;
+    padding: 5px 14px; border-radius: 20px; margin-bottom: 1.5rem; letter-spacing: 0.05em;
+  }
+  .hero h1 {
+    font-size: clamp(1.8rem, 4.5vw, 3rem); font-weight: 800; color: #fff;
+    line-height: 1.2; margin-bottom: 1rem;
+  }
+  .hero h1 span { color: var(--blue-light); }
+  .hero-tagline {
+    font-size: 1rem; color: rgba(255,255,255,0.6);
+    font-weight: 500; margin-bottom: 1.2rem; letter-spacing: 0.02em;
+    text-transform: uppercase; font-size: 12px;
+  }
+  .hero p { font-size: 1.05rem; color: rgba(255,255,255,0.75); max-width: 580px; margin-bottom: 2rem; line-height: 1.7; }
+  .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 3rem; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+    color: #fff; padding: 13px 28px; border-radius: 8px;
+    font-weight: 700; font-size: 14px; text-decoration: none;
+    border: none; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(59,130,212,0.4);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(59,130,212,0.5); }
+  .btn-outline {
+    background: transparent; color: #fff;
+    padding: 13px 28px; border-radius: 8px;
+    font-weight: 700; font-size: 14px; text-decoration: none;
+    border: 2px solid rgba(255,255,255,0.3); cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .btn-outline:hover { border-color: var(--blue-light); background: rgba(59,130,212,0.1); }
+  .hero-stats { display: flex; gap: 2rem; flex-wrap: wrap; }
+  .hero-stat { text-align: center; }
+  .hero-stat-num { font-size: 1.6rem; font-weight: 800; color: var(--blue-light); }
+  .hero-stat-label { font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.05em; }
+  .hero-visual {
+    position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+    width: 42%; opacity: 0.18; pointer-events: none;
+  }
+
+  /* SECTION BASE */
+  section { padding: 5rem 2rem; }
+  .container { max-width: 760px; margin: 0 auto; }
+  .section-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--blue); margin-bottom: 0.5rem;
+  }
+  .section-title { font-size: clamp(1.4rem, 3vw, 2rem); font-weight: 800; color: var(--text); margin-bottom: 0.75rem; line-height: 1.25; }
+  .section-subtitle { color: var(--muted); font-size: 1rem; max-width: 540px; line-height: 1.7; }
+  .section-header { margin-bottom: 3rem; }
+
+  /* ABOUT */
+  .about { background: var(--surface); }
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center; }
+  .about-text p { color: var(--muted); line-height: 1.8; margin-bottom: 1rem; }
+  .about-highlight {
+    background: linear-gradient(135deg, var(--dark) 0%, var(--dark2) 100%);
+    border-radius: 12px; padding: 1.5rem; border-left: 4px solid var(--blue);
+  }
+  .about-highlight p { color: rgba(255,255,255,0.8); font-size: 0.95rem; margin: 0; line-height: 1.7; }
+  .about-visual { display: flex; flex-direction: column; gap: 1rem; }
+  .about-card {
+    background: #fff; border: 1px solid var(--border); border-radius: 10px;
+    padding: 1rem 1.2rem; display: flex; align-items: center; gap: 12px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .about-card:hover { transform: translateX(4px); box-shadow: 0 4px 16px rgba(59,130,212,0.12); }
+  .about-card-icon {
+    width: 40px; height: 40px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .about-card-icon svg { width: 22px; height: 22px; }
+  .about-card-text h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+  .about-card-text p { font-size: 12px; color: var(--muted); margin: 0; }
+
+  /* CARDS GRID */
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; }
+  .card {
+    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.5rem; transition: transform 0.25s, box-shadow 0.25s;
+    position: relative; overflow: hidden;
+  }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(59,130,212,0.12); }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--blue), var(--purple));
+  }
+  .card-icon {
+    width: 48px; height: 48px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;
+  }
+  .card-icon svg { width: 26px; height: 26px; }
+  .card h3 { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .card p { font-size: 0.875rem; color: var(--muted); line-height: 1.6; }
+
+  /* CHALLENGE */
+  .challenge { background: var(--dark); }
+  .challenge .section-title { color: #fff; }
+  .challenge .section-subtitle { color: rgba(255,255,255,0.6); }
+  .challenge-card {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 1.5rem;
+    transition: transform 0.25s, border-color 0.25s, background 0.25s;
+  }
+  .challenge-card:hover {
+    transform: translateY(-4px); border-color: rgba(59,130,212,0.5);
+    background: rgba(59,130,212,0.08);
+  }
+  .challenge-card::before { background: linear-gradient(90deg, var(--blue-light), var(--purple)); }
+  .challenge-card h3 { color: #fff; }
+  .challenge-card p { color: rgba(255,255,255,0.6); }
+
+  /* OBJECTIVES */
+  .objectives { background: var(--bg); }
+  .obj-card { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+  .obj-card-header {
+    background: linear-gradient(135deg, var(--dark), var(--dark2));
+    padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 12px;
+  }
+  .obj-num {
+    width: 32px; height: 32px; background: linear-gradient(135deg, var(--blue), var(--purple));
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; color: #fff; flex-shrink: 0;
+  }
+  .obj-card-header h3 { color: #fff; font-size: 0.95rem; font-weight: 700; }
+  .obj-card-body { padding: 1.25rem 1.5rem; }
+  .obj-card-body p { color: var(--muted); font-size: 0.875rem; line-height: 1.6; margin-bottom: 0.75rem; }
+  .obj-tag-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .obj-tag {
+    background: rgba(59,130,212,0.1); color: var(--blue-dark); border: 1px solid rgba(59,130,212,0.2);
+    font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 12px;
+  }
+
+  /* HOW IT WORKS */
+  .how { background: var(--surface); }
+  .flow-steps { display: flex; align-items: flex-start; gap: 0; flex-wrap: wrap; justify-content: center; }
+  .flow-step { display: flex; flex-direction: column; align-items: center; text-align: center; flex: 1; min-width: 100px; max-width: 120px; }
+  .flow-icon {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 0.75rem; box-shadow: 0 4px 16px rgba(59,130,212,0.3);
+    flex-shrink: 0;
+  }
+  .flow-icon svg { width: 26px; height: 26px; fill: #fff; }
+  .flow-label { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 0.25rem; }
+  .flow-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+  .flow-arrow {
+    display: flex; align-items: center; padding-top: 1.75rem;
+    color: var(--blue); font-size: 1.2rem; flex-shrink: 0; padding-left: 4px; padding-right: 4px;
+  }
+
+  /* DASHBOARD */
+  .dashboard { background: var(--dark); }
+  .dashboard .section-title { color: #fff; }
+  .dashboard .section-subtitle { color: rgba(255,255,255,0.6); }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .stat-card {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px; padding: 1.2rem; text-align: center;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .stat-card:hover { background: rgba(59,130,212,0.12); border-color: rgba(59,130,212,0.4); }
+  .stat-card-value { font-size: 1.6rem; font-weight: 800; color: #fff; line-height: 1; margin-bottom: 0.3rem; }
+  .stat-card-label { font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat-card-change { font-size: 11px; font-weight: 600; margin-top: 0.3rem; }
+  .up { color: #10b981; } .down { color: #ef4444; }
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 2rem; }
+  .chart-card {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 1.25rem;
+  }
+  .chart-card h4 { color: rgba(255,255,255,0.85); font-size: 13px; font-weight: 700; margin-bottom: 1rem; }
+  .chart-wrap { width: 100%; overflow: hidden; }
+  /* Bar chart */
+  .bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 100px; }
+  .bar-item { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+  .bar { width: 100%; border-radius: 3px 3px 0 0; transition: opacity 0.2s; min-width: 8px; }
+  .bar:hover { opacity: 0.75; }
+  .bar-label { font-size: 9px; color: rgba(255,255,255,0.4); }
+  /* Line chart SVG */
+  .line-svg { width: 100%; height: 90px; }
+  /* Donut */
+  .donut-wrap { display: flex; align-items: center; gap: 1.2rem; }
+  .donut-svg { width: 80px; height: 80px; flex-shrink: 0; }
+  .donut-legend { display: flex; flex-direction: column; gap: 6px; }
+  .donut-leg-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: rgba(255,255,255,0.7); }
+  .donut-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  /* Table */
+  .alerts-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .alerts-table thead tr { background: rgba(59,130,212,0.2); }
+  .alerts-table th { padding: 8px 10px; text-align: left; font-weight: 600; color: rgba(255,255,255,0.7); white-space: nowrap; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .alerts-table td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.06); color: rgba(255,255,255,0.8); white-space: nowrap; }
+  .alerts-table tr:hover td { background: rgba(59,130,212,0.08); }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+  .badge-danger { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); }
+  .badge-warning { background: rgba(245,158,11,0.2); color: #fcd34d; border: 1px solid rgba(245,158,11,0.3); }
+  .badge-success { background: rgba(16,185,129,0.2); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.3); }
+  .table-wrap { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden; overflow-x: auto; }
+
+  /* EXPLAINABLE AI */
+  .explain { background: var(--bg); }
+  .explain-card {
+    background: linear-gradient(135deg, var(--dark) 0%, var(--dark2) 100%);
+    border-radius: 16px; padding: 2rem; border: 1px solid rgba(59,130,212,0.3);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    max-width: 600px; margin: 0 auto;
+  }
+  .explain-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+  .explain-ai-badge {
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    color: #fff; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .explain-header h3 { color: #fff; font-size: 14px; font-weight: 700; }
+  .explain-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+  .explain-meta-item { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 10px 14px; }
+  .explain-meta-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255,255,255,0.4); margin-bottom: 3px; }
+  .explain-meta-value { font-size: 1.1rem; font-weight: 800; color: #fff; }
+  .risk-bar-wrap { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 10px 14px; }
+  .risk-bar-track { background: rgba(255,255,255,0.1); border-radius: 4px; height: 8px; overflow: hidden; margin-top: 6px; }
+  .risk-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #f59e0b, #ef4444); width: 94%; }
+  .explain-reasons { margin-bottom: 1.5rem; }
+  .explain-reasons h4 { color: rgba(255,255,255,0.6); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.75rem; }
+  .reason-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 0.6rem; }
+  .reason-check { color: #10b981; font-size: 14px; margin-top: 1px; flex-shrink: 0; }
+  .reason-text { color: rgba(255,255,255,0.8); font-size: 13px; line-height: 1.5; }
+  .explain-conclusion {
+    background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 8px; padding: 1rem 1.25rem;
+  }
+  .explain-conclusion p { color: #fca5a5; font-size: 13px; font-weight: 600; margin: 0; }
+
+  /* TECH STACK */
+  .tech { background: var(--surface); }
+  .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+  .tech-card {
+    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.25rem; text-align: center;
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+  }
+  .tech-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(59,130,212,0.12); border-color: var(--blue); }
+  .tech-icon-wrap {
+    width: 52px; height: 52px; border-radius: 12px; margin: 0 auto 0.75rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tech-icon-wrap svg { width: 28px; height: 28px; }
+  .tech-card h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .tech-card p { font-size: 11px; color: var(--muted); line-height: 1.4; }
+
+  /* BENEFITS */
+  .benefits { background: var(--bg); }
+  .benefit-card {
+    background: linear-gradient(135deg, var(--dark) 0%, var(--dark2) 100%);
+    border: 1px solid rgba(59,130,212,0.2); border-radius: 12px; padding: 1.5rem;
+    transition: transform 0.25s, border-color 0.25s;
+  }
+  .benefit-card:hover { transform: translateY(-4px); border-color: rgba(59,130,212,0.5); }
+  .benefit-card::before { background: linear-gradient(90deg, var(--blue-light), var(--purple)); }
+  .benefit-card h3 { color: #fff; font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .benefit-card p { color: rgba(255,255,255,0.6); font-size: 0.875rem; line-height: 1.6; }
+
+  /* FUTURE */
+  .future { background: var(--surface); }
+  .future-card {
+    background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem;
+    transition: transform 0.25s, box-shadow 0.25s;
+  }
+  .future-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(59,130,212,0.12); }
+
+  /* TEAM */
+  .team { background: var(--bg); }
+  .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1.5rem; }
+  .team-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 1.5rem 1rem; text-align: center;
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+  }
+  .team-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(59,130,212,0.12); border-color: var(--blue); }
+  .team-avatar {
+    width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 0.75rem;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; font-weight: 800; color: #fff;
+    border: 3px solid var(--border);
+  }
+  .team-card h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .team-card .role { font-size: 12px; color: var(--blue); font-weight: 600; margin-bottom: 0.75rem; }
+  .team-links { display: flex; justify-content: center; gap: 8px; }
+  .team-link {
+    width: 28px; height: 28px; border-radius: 6px; background: var(--border);
+    display: flex; align-items: center; justify-content: center; text-decoration: none;
+    transition: background 0.2s;
+  }
+  .team-link:hover { background: var(--blue); }
+  .team-link svg { width: 14px; height: 14px; fill: var(--muted); }
+  .team-link:hover svg { fill: #fff; }
+
+  /* CONTACT */
+  .contact { background: var(--surface); }
+  .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+  .contact-form { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 2rem; }
+  .form-group { margin-bottom: 1.2rem; }
+  .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .form-group input, .form-group textarea, .form-group select {
+    width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px;
+    font-family: inherit; font-size: 14px; color: var(--text); background: var(--surface);
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .form-group input:focus, .form-group textarea:focus {
+    border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,212,0.12);
+  }
+  .form-group textarea { resize: vertical; min-height: 100px; }
+  .form-submit {
+    width: 100%; background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+    color: #fff; border: none; padding: 12px; border-radius: 8px;
+    font-weight: 700; font-size: 14px; cursor: pointer;
+    transition: opacity 0.2s; font-family: inherit;
+  }
+  .form-submit:hover { opacity: 0.85; }
+  .contact-info { display: flex; flex-direction: column; gap: 1rem; }
+  .contact-info-card {
+    background: #fff; border: 1px solid var(--border); border-radius: 12px;
+    padding: 1.25rem; display: flex; align-items: flex-start; gap: 14px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .contact-info-card:hover { transform: translateX(4px); box-shadow: 0 4px 16px rgba(59,130,212,0.1); }
+  .contact-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .contact-icon svg { width: 20px; height: 20px; }
+  .contact-info-card h4 { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .contact-info-card p { font-size: 12px; color: var(--muted); margin: 0; }
+
+  /* FOOTER */
+  footer {
+    background: var(--dark); padding: 3rem 2rem 1.5rem;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .footer-grid {
+    max-width: 760px; margin: 0 auto;
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2rem;
+    margin-bottom: 2rem;
+  }
+  .footer-brand-name { font-size: 14px; font-weight: 800; color: #fff; margin-bottom: 0.5rem; }
+  .footer-brand-desc { font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.6; margin-bottom: 1rem; }
+  .footer-social { display: flex; gap: 8px; }
+  .footer-social a {
+    width: 32px; height: 32px; border-radius: 6px;
+    background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s; text-decoration: none;
+  }
+  .footer-social a:hover { background: var(--blue); }
+  .footer-social svg { width: 15px; height: 15px; fill: rgba(255,255,255,0.6); }
+  .footer-col h5 { color: rgba(255,255,255,0.85); font-size: 13px; font-weight: 700; margin-bottom: 0.75rem; }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .footer-col ul li a { color: rgba(255,255,255,0.45); font-size: 12px; text-decoration: none; transition: color 0.2s; }
+  .footer-col ul li a:hover { color: var(--blue-light); }
+  .footer-bottom {
+    max-width: 760px; margin: 0 auto;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;
+  }
+  .footer-bottom p { font-size: 12px; color: rgba(255,255,255,0.35); }
+
+  /* MADE WITH FOOTER */
+  .made-with {
+    text-align: center; padding: 12px;
+    font-size: 12px; color: rgba(255,255,255,0.25);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    max-width: 760px; margin: 1rem auto 0;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 680px) {
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+    section { padding: 3.5rem 1.25rem; }
+    .about-grid, .contact-grid { grid-template-columns: 1fr; }
+    .charts-grid { grid-template-columns: 1fr; }
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+    .hero-visual { display: none; }
+    .flow-steps { gap: 0.25rem; }
+    .flow-step { min-width: 70px; }
+  }
+
+  /* BG COLORS */
+  .bg-blue-10 { background: rgba(59,130,212,0.1); }
+  .bg-purple-10 { background: rgba(124,92,216,0.1); }
+  .bg-green-10 { background: rgba(16,185,129,0.1); }
+  .bg-red-10 { background: rgba(239,68,68,0.1); }
+  .bg-yellow-10 { background: rgba(245,158,11,0.1); }
+  .c-blue { color: var(--blue); } .c-purple { color: var(--purple); }
+  .c-green { color: #10b981; } .c-red { color: var(--danger); }
+  .c-yellow { color: var(--warning); }
+
+  /* SCROLL REVEAL ANIMATION */
+  .reveal {
+    opacity: 0; transform: translateY(24px);
+    transition: opacity 0.55s ease, transform 0.55s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+
+<nav>
+  <a href="#home" class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+    </div>
+    <span class="nav-brand">AI Fraud<br />Detection</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#objectives">Objectives</a></li>
+    <li><a href="#dashboard">Dashboard</a></li>
+    <li><a href="#technology">Technology</a></li>
+    <li><a href="#team">Team</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="#dashboard" class="nav-cta">Live Demo</a>
+</nav>
+
+
+<section class="hero" id="home">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <svg width="12" height="12" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+      IBM AI Innovation Project 2025
+    </div>
+    <h1>AI Agent for<br /><span>Electricity Bill</span><br />Fraud Detection</h1>
+    <p class="hero-tagline">Using Artificial Intelligence to Detect Electricity Billing Fraud and Consumption Anomalies</p>
+    <p>An AI-powered solution that analyzes electricity consumption and billing records to detect fraud, identify abnormal usage patterns, and provide explainable insights for power distribution companies.</p>
+    <div class="hero-btns">
+      <a href="#objectives" class="btn-primary">Explore Project</a>
+      <a href="#dashboard" class="btn-outline">Live Demo</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-num">98.4%</div>
+        <div class="hero-stat-label">Detection Accuracy</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">12,580</div>
+        <div class="hero-stat-label">Bills Analyzed</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">847</div>
+        <div class="hero-stat-label">Fraud Cases Found</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">62%</div>
+        <div class="hero-stat-label">Revenue Recovered</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="hero-visual">
+    <svg fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="250" cy="250" r="200" stroke="#3b82d4" stroke-width="1" opacity="0.5"></circle>
+      <circle cx="250" cy="250" r="140" stroke="#7c5cd8" stroke-width="1" opacity="0.4"></circle>
+      <rect x="150" y="170" width="200" height="160" rx="16" stroke="#3b82d4" stroke-width="2" fill="rgba(59,130,212,0.05)"></rect>
+      <rect x="170" y="195" width="60" height="40" rx="4" fill="rgba(59,130,212,0.15)" stroke="#3b82d4" stroke-width="1"></rect>
+      <rect x="245" y="195" width="90" height="8" rx="4" fill="rgba(59,130,212,0.3)"></rect>
+      <rect x="245" y="210" width="70" height="8" rx="4" fill="rgba(59,130,212,0.2)"></rect>
+      <rect x="245" y="225" width="80" height="8" rx="4" fill="rgba(59,130,212,0.15)"></rect>
+      <rect x="170" y="255" width="165" height="55" rx="6" fill="rgba(59,130,212,0.08)" stroke="#3b82d4" stroke-width="1"></rect>
+      
+      <rect x="180" y="288" width="10" height="12" rx="2" fill="#3b82d4" opacity="0.7"></rect>
+      <rect x="195" y="278" width="10" height="22" rx="2" fill="#3b82d4" opacity="0.7"></rect>
+      <rect x="210" y="268" width="10" height="32" rx="2" fill="#3b82d4" opacity="0.7"></rect>
+      <rect x="225" y="280" width="10" height="20" rx="2" fill="#ef4444" opacity="0.8"></rect>
+      <rect x="240" y="273" width="10" height="27" rx="2" fill="#3b82d4" opacity="0.7"></rect>
+      <rect x="255" y="282" width="10" height="18" rx="2" fill="#3b82d4" opacity="0.7"></rect>
+      <rect x="270" y="270" width="10" height="30" rx="2" fill="#f59e0b" opacity="0.8"></rect>
+      
+      <line x1="50" y1="80" x2="150" y2="170" stroke="#3b82d4" stroke-width="1" opacity="0.3"></line>
+      <line x1="350" y1="170" x2="450" y2="80" stroke="#3b82d4" stroke-width="1" opacity="0.3"></line>
+      <line x1="150" y1="330" x2="50" y2="420" stroke="#7c5cd8" stroke-width="1" opacity="0.3"></line>
+      <line x1="350" y1="330" x2="450" y2="420" stroke="#7c5cd8" stroke-width="1" opacity="0.3"></line>
+      <circle cx="50" cy="80" r="5" fill="#3b82d4" opacity="0.6"></circle>
+      <circle cx="450" cy="80" r="5" fill="#3b82d4" opacity="0.6"></circle>
+      <circle cx="50" cy="420" r="5" fill="#7c5cd8" opacity="0.6"></circle>
+      <circle cx="450" cy="420" r="5" fill="#7c5cd8" opacity="0.6"></circle>
+      
+      <circle cx="250" cy="250" r="28" fill="rgba(59,130,212,0.15)" stroke="#3b82d4" stroke-width="2"></circle>
+      <path d="M243 243l14 14m0-14l-14 14" stroke="#fff" stroke-width="2.5" stroke-linecap="round"></path>
+    </svg>
+  </div>
+</section>
+
+
+<section class="about" id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-text">
+        <div class="section-label">About the Project</div>
+        <h2 class="section-title">Intelligent Fraud Detection for Utility Companies</h2>
+        <p>Power distribution companies lose significant revenue due to electricity theft, billing fraud, and abnormal consumption patterns. Manually reviewing thousands of consumer records is slow and inefficient.</p>
+        <p>Our AI Agent automates fraud detection using machine learning and intelligent data analysis, helping utility companies identify suspicious consumers quickly and accurately.</p>
+        <div class="about-highlight">
+          <p>Electricity theft costs the global economy an estimated <strong>$96 billion annually</strong>. AI-powered detection can recover up to 60% of lost revenue within the first year of deployment.</p>
+        </div>
+      </div>
+      <div class="about-visual">
+        <div class="about-card">
+          <div class="about-card-icon bg-red-10">
+            <svg fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          </div>
+          <div class="about-card-text">
+            <h4>$96B Annual Loss</h4>
+            <p>Global electricity theft cost per year</p>
+          </div>
+        </div>
+        <div class="about-card">
+          <div class="about-card-icon bg-blue-10">
+            <svg fill="none" stroke="#3b82d4" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4l3 3"></path></svg>
+          </div>
+          <div class="about-card-text">
+            <h4>70% Faster Detection</h4>
+            <p>AI reduces investigation time dramatically</p>
+          </div>
+        </div>
+        <div class="about-card">
+          <div class="about-card-icon bg-green-10">
+            <svg fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+          </div>
+          <div class="about-card-text">
+            <h4>98.4% Accuracy</h4>
+            <p>AI model precision on test datasets</p>
+          </div>
+        </div>
+        <div class="about-card">
+          <div class="about-card-icon bg-purple-10">
+            <svg fill="none" stroke="#7c5cd8" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"></path></svg>
+          </div>
+          <div class="about-card-text">
+            <h4>Real-time Analysis</h4>
+            <p>Continuous monitoring of consumer data</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="challenge" id="challenge">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label" style="color:var(--blue-light)">The Problem</div>
+      <h2 class="section-title">The Challenge</h2>
+      <p class="section-subtitle" style="color:rgba(255,255,255,0.55)">Why traditional methods fail and why AI is essential for modern fraud detection.</p>
+    </div>
+    <div class="cards-grid">
+      <div class="card challenge-card reveal">
+        <div class="card-icon bg-red-10">
+          <svg fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
+        </div>
+        <h3>Revenue Loss</h3>
+        <p>Electricity theft and billing fraud cause massive financial losses for distribution companies and honest consumers.</p>
+      </div>
+      <div class="card challenge-card reveal">
+        <div class="card-icon bg-blue-10">
+          <svg fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+        </div>
+        <h3>Data Overload</h3>
+        <p>Millions of consumer records make manual inspection impossible, requiring automated analysis tools.</p>
+      </div>
+      <div class="card challenge-card reveal">
+        <div class="card-icon bg-yellow-10">
+          <svg fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </div>
+        <h3>Hidden Anomalies</h3>
+        <p>Billing anomalies are subtle and hard to detect without pattern recognition powered by machine learning.</p>
+      </div>
+      <div class="card challenge-card reveal">
+        <div class="card-icon bg-purple-10">
+          <svg fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M9 9h6M9 12h6M9 15h4"></path></svg>
+        </div>
+        <h3>Manual Inefficiency</h3>
+        <p>Utility companies require automated AI-powered systems to replace slow, error-prone manual audits.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="objectives" id="objectives">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label">Our Solution</div>
+      <h2 class="section-title">Project Objectives</h2>
+      <p class="section-subtitle">Four key pillars that define the AI-powered fraud detection capability.</p>
+    </div>
+    <div class="cards-grid" style="grid-template-columns:repeat(auto-fit, minmax(300px, 1fr))">
+      <div class="card obj-card reveal" style="padding:0;border-radius:12px">
+        <div class="obj-card-header">
+          <div class="obj-num">1</div>
+          <h3>Electricity Consumption Analysis</h3>
+        </div>
+        <div class="obj-card-body">
+          <p>Analyze historical electricity usage data to establish baseline consumption patterns and understand normal behavior for each consumer segment.</p>
+          <div class="obj-tag-list">
+            <span class="obj-tag">Historical Data</span>
+            <span class="obj-tag">Baseline Modeling</span>
+            <span class="obj-tag">Consumer Segmentation</span>
+          </div>
+        </div>
+      </div>
+      <div class="card obj-card reveal" style="padding:0;border-radius:12px">
+        <div class="obj-card-header">
+          <div class="obj-num">2</div>
+          <h3>Fraud Pattern Identification</h3>
+        </div>
+        <div class="obj-card-body">
+          <p>Detect suspicious patterns across multiple dimensions including consumption drops, unusual spikes, meter inconsistencies, and billing mismatches.</p>
+          <div class="obj-tag-list">
+            <span class="obj-tag">Usage Drops</span>
+            <span class="obj-tag">Unusual Spikes</span>
+            <span class="obj-tag">Meter Mismatch</span>
+            <span class="obj-tag">Billing Errors</span>
+          </div>
+        </div>
+      </div>
+      <div class="card obj-card reveal" style="padding:0;border-radius:12px">
+        <div class="obj-card-header">
+          <div class="obj-num">3</div>
+          <h3>AI-Based Anomaly Detection</h3>
+        </div>
+        <div class="obj-card-body">
+          <p>Automatically identify consumers whose usage significantly differs from their historical consumption using trained machine learning models.</p>
+          <div class="obj-tag-list">
+            <span class="obj-tag">Isolation Forest</span>
+            <span class="obj-tag">LSTM Networks</span>
+            <span class="obj-tag">Z-Score Analysis</span>
+          </div>
+        </div>
+      </div>
+      <div class="card obj-card reveal" style="padding:0;border-radius:12px">
+        <div class="obj-card-header">
+          <div class="obj-num">4</div>
+          <h3>Explainable AI</h3>
+        </div>
+        <div class="obj-card-body">
+          <p>Provide human-readable explanations using IBM Granite models describing exactly why a consumer or bill has been flagged as suspicious.</p>
+          <div class="obj-tag-list">
+            <span class="obj-tag">IBM Granite</span>
+            <span class="obj-tag">SHAP Values</span>
+            <span class="obj-tag">Natural Language</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="how" id="how">
+  <div class="container">
+    <div class="section-header" style="text-align:center">
+      <div class="section-label">Process</div>
+      <h2 class="section-title">How It Works</h2>
+      <p class="section-subtitle" style="margin:0 auto">From raw consumer data to actionable fraud alerts — a complete AI-driven pipeline.</p>
+    </div>
+    <div class="flow-steps">
+      <div class="flow-step reveal">
+        <div class="flow-icon">
+          <svg><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z"></path></svg>
+        </div>
+        <div class="flow-label">Consumer Data</div>
+        <div class="flow-desc">Billing &amp; meter records ingested</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step reveal">
+        <div class="flow-icon" style="background:linear-gradient(135deg,#7c5cd8,#5b3fc4)">
+          <svg><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+        </div>
+        <div class="flow-label">Data Cleaning</div>
+        <div class="flow-desc">Normalize &amp; validate inputs</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step reveal">
+        <div class="flow-icon" style="background:linear-gradient(135deg,#10b981,#059669)">
+          <svg><circle cx="12" cy="12" r="3"></circle><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"></path></svg>
+        </div>
+        <div class="flow-label">AI Analysis</div>
+        <div class="flow-desc">ML models process usage data</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step reveal">
+        <div class="flow-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
+          <svg><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        </div>
+        <div class="flow-label">Pattern Detection</div>
+        <div class="flow-desc">Identify anomaly signatures</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step reveal">
+        <div class="flow-icon" style="background:linear-gradient(135deg,#ef4444,#dc2626)">
+          <svg><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        </div>
+        <div class="flow-label">Fraud Identification</div>
+        <div class="flow-desc">Flag high-risk consumers</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step reveal">
+        <div class="flow-icon" style="background:linear-gradient(135deg,#6366f1,#4f46e5)">
+          <svg><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"></path></svg>
+        </div>
+        <div class="flow-label">Explainable Results</div>
+        <div class="flow-desc">AI explains each decision</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="dashboard" id="dashboard">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label" style="color:var(--blue-light)">Live Demo</div>
+      <h2 class="section-title">AI Analytics Dashboard</h2>
+      <p class="section-subtitle">Real-time fraud detection insights powered by the AI agent.</p>
+    </div>
+
+    
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-card-value">24,816</div>
+        <div class="stat-card-label">Total Consumers</div>
+        <div class="stat-card-change up">↑ 3.2% this month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-value">12,580</div>
+        <div class="stat-card-label">Bills Analyzed</div>
+        <div class="stat-card-change up">↑ 8.5% this month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-value" style="color:#fca5a5">847</div>
+        <div class="stat-card-label">Fraud Cases</div>
+        <div class="stat-card-change down">↓ 4.1% vs last month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-value" style="color:#6ee7b7">98.4%</div>
+        <div class="stat-card-label">Accuracy Rate</div>
+        <div class="stat-card-change up">↑ 0.6% this quarter</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-value">342 kWh</div>
+        <div class="stat-card-label">Avg Consumption</div>
+        <div class="stat-card-change" style="color:rgba(255,255,255,0.4)">Per consumer/month</div>
+      </div>
+    </div>
+
+    
+    <div class="charts-grid">
+      
+      <div class="chart-card">
+        <h4>Monthly Electricity Consumption (kWh × 1000)</h4>
+        <div class="chart-wrap">
+          <div class="bar-chart">
+            <div class="bar-item"><div class="bar" style="height:55px;background:linear-gradient(180deg,#3b82d4,#1e4fa8)"></div><div class="bar-label">Jan</div></div>
+            <div class="bar-item"><div class="bar" style="height:62px;background:linear-gradient(180deg,#3b82d4,#1e4fa8)"></div><div class="bar-label">Feb</div></div>
+            <div class="bar-item"><div class="bar" style="height:48px;background:linear-gradient(180deg,#3b82d4,#1e4fa8)"></div><div class="bar-label">Mar</div></div>
+            <div class="bar-item"><div class="bar" style="height:70px;background:linear-gradient(180deg,#3b82d4,#1e4fa8)"></div><div class="bar-label">Apr</div></div>
+            <div class="bar-item"><div class="bar" style="height:85px;background:linear-gradient(180deg,#3b82d4,#1e4fa8)"></div><div class="bar-label">May</div></div>
+            <div class="bar-item"><div class="bar" style="height:95px;background:linear-gradient(180deg,#60a5fa,#3b82d4)"></div><div class="bar-label">Jun</div></div>
+            <div class="bar-item"><div class="bar" style="height:100px;background:linear-gradient(180deg,#ef4444,#dc2626)"></div><div class="bar-label">Jul</div></div>
+            <div class="bar-item"><div class="bar" style="height:92px;background:linear-gradient(180deg,#f59e0b,#d97706)"></div><div class="bar-label">Aug</div></div>
+            <div class="bar-item"><div class="bar" style="height:78px;background:linear-gradient(180deg,#3b82d4,#1e4fa8)"></div><div class="bar-label">Sep</div></div>
+            <div class="bar-item"><div class="bar" style="height:65px;background:linear-gradient(180deg,#3b82d4,#1e4fa8)"></div><div class="bar-label">Oct</div></div>
+            <div class="bar-item"><div class="bar" style="height:58px;background:linear-gradient(180deg,#3b82d4,#1e4fa8)"></div><div class="bar-label">Nov</div></div>
+            <div class="bar-item"><div class="bar" style="height:72px;background:linear-gradient(180deg,#3b82d4,#1e4fa8)"></div><div class="bar-label">Dec</div></div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="chart-card">
+        <h4>Fraud Detection Trend (Cases per Month)</h4>
+        <div class="chart-wrap">
+          <svg class="line-svg">
+            <defs>
+              
+                <stop offset="0%"></stop>
+                <stop offset="100%"></stop>
+              
+            </defs>
+            <path d="M0,65 L25,58 L50,70 L75,45 L100,50 L125,30 L150,38 L175,22 L200,28 L225,15 L250,20 L275,10 L300,8" stroke="#ef4444" stroke-width="2.5" fill="none" stroke-linecap="round"></path>
+            <path d="M0,65 L25,58 L50,70 L75,45 L100,50 L125,30 L150,38 L175,22 L200,28 L225,15 L250,20 L275,10 L300,8 L300,90 L0,90Z" fill="url(#lineGrad)"></path>
+            
+            <line x1="0" y1="0" x2="300" y2="0" stroke="rgba(255,255,255,0.05)" stroke-width="1"></line>
+            <line x1="0" y1="30" x2="300" y2="30" stroke="rgba(255,255,255,0.05)" stroke-width="1"></line>
+            <line x1="0" y1="60" x2="300" y2="60" stroke="rgba(255,255,255,0.05)" stroke-width="1"></line>
+          </svg>
+        </div>
+        <div style="display:flex;gap:1rem;margin-top:0.5rem">
+          <span style="font-size:11px;color:rgba(255,255,255,0.4)">Jan</span>
+          <span style="font-size:11px;color:rgba(255,255,255,0.4);margin-left:auto">Dec</span>
+        </div>
+      </div>
+
+      
+      <div class="chart-card">
+        <h4>Consumer Risk Distribution</h4>
+        <div class="donut-wrap">
+          <svg class="donut-svg">
+            <circle cx="40" cy="40" r="28" fill="none" stroke="#1e293b" stroke-width="14"></circle>
+            
+            <circle cx="40" cy="40" r="28" fill="none" stroke="#ef4444" stroke-width="14" transform="rotate(-90 40 40)"></circle>
+            
+            <circle cx="40" cy="40" r="28" fill="none" stroke="#f59e0b" stroke-width="14" transform="rotate(-90 40 40)"></circle>
+            
+            <circle cx="40" cy="40" r="28" fill="none" stroke="#10b981" stroke-width="14" transform="rotate(-90 40 40)"></circle>
+            <text x="40" y="44" text-anchor="middle" fill="#fff" font-size="10" font-weight="800">Risk</text>
+          </svg>
+          <div class="donut-legend">
+            <div class="donut-leg-item"><div class="donut-dot" style="background:#ef4444"></div>High Risk: 6.7%</div>
+            <div class="donut-leg-item"><div class="donut-dot" style="background:#f59e0b"></div>Medium Risk: 12.3%</div>
+            <div class="donut-leg-item"><div class="donut-dot" style="background:#10b981"></div>Low Risk: 81%</div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="chart-card">
+        <h4>Electricity Usage Distribution (kWh)</h4>
+        <div class="chart-wrap">
+          <div class="bar-chart" style="align-items:flex-end">
+            <div class="bar-item"><div class="bar" style="height:20px;background:#3b82d4;opacity:0.7"></div><div class="bar-label">&lt;100</div></div>
+            <div class="bar-item"><div class="bar" style="height:40px;background:#3b82d4;opacity:0.75"></div><div class="bar-label">100-200</div></div>
+            <div class="bar-item"><div class="bar" style="height:80px;background:#3b82d4"></div><div class="bar-label">200-400</div></div>
+            <div class="bar-item"><div class="bar" style="height:95px;background:#3b82d4"></div><div class="bar-label">400-600</div></div>
+            <div class="bar-item"><div class="bar" style="height:60px;background:#3b82d4;opacity:0.8"></div><div class="bar-label">600-800</div></div>
+            <div class="bar-item"><div class="bar" style="height:35px;background:#f59e0b;opacity:0.9"></div><div class="bar-label">800-1k</div></div>
+            <div class="bar-item"><div class="bar" style="height:18px;background:#ef4444"></div><div class="bar-label">&gt;1000</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="table-wrap">
+      <div style="padding:1rem 1.25rem;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between">
+        <h4 style="color:rgba(255,255,255,0.85);font-size:13px;font-weight:700">Recent Fraud Alerts</h4>
+        <span class="badge badge-danger">847 Active Cases</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="alerts-table">
+          <thead>
+            <tr>
+              <th>Consumer ID</th><th>Meter Number</th><th>Consumption</th>
+              <th>Risk Score</th><th>Fraud Type</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>C1024</td><td>MTR-8821</td><td>18 kWh</td><td style="color:#fca5a5;font-weight:700">94%</td><td>Meter Bypass</td><td><span class="badge badge-danger">High Risk</span></td></tr>
+            <tr><td>C3817</td><td>MTR-4450</td><td>92 kWh</td><td style="color:#fcd34d;font-weight:700">71%</td><td>Unusual Drop</td><td><span class="badge badge-warning">Medium Risk</span></td></tr>
+            <tr><td>C2241</td><td>MTR-9963</td><td>1,840 kWh</td><td style="color:#fca5a5;font-weight:700">88%</td><td>Abnormal Spike</td><td><span class="badge badge-danger">High Risk</span></td></tr>
+            <tr><td>C0972</td><td>MTR-3374</td><td>305 kWh</td><td style="color:#6ee7b7;font-weight:700">22%</td><td>None</td><td><span class="badge badge-success">Safe</span></td></tr>
+            <tr><td>C5530</td><td>MTR-7761</td><td>47 kWh</td><td style="color:#fca5a5;font-weight:700">97%</td><td>Tampered Meter</td><td><span class="badge badge-danger">High Risk</span></td></tr>
+            <tr><td>C4418</td><td>MTR-2215</td><td>620 kWh</td><td style="color:#fcd34d;font-weight:700">65%</td><td>Billing Mismatch</td><td><span class="badge badge-warning">Medium Risk</span></td></tr>
+            <tr><td>C1187</td><td>MTR-5542</td><td>280 kWh</td><td style="color:#6ee7b7;font-weight:700">18%</td><td>None</td><td><span class="badge badge-success">Safe</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="explain" id="explain">
+  <div class="container">
+    <div class="section-header" style="text-align:center">
+      <div class="section-label">AI Insights</div>
+      <h2 class="section-title">Explainable AI in Action</h2>
+      <p class="section-subtitle" style="margin:0 auto">IBM Granite models generate human-readable explanations for every fraud detection decision.</p>
+    </div>
+    <div class="explain-card">
+      <div class="explain-header">
+        <div class="explain-ai-badge">IBM Granite AI</div>
+        <h3>Fraud Analysis Report — Consumer C1024</h3>
+      </div>
+      <div class="explain-meta">
+        <div class="explain-meta-item">
+          <div class="explain-meta-label">Consumer ID</div>
+          <div class="explain-meta-value">C1024</div>
+        </div>
+        <div class="explain-meta-item">
+          <div class="explain-meta-label">Meter Number</div>
+          <div class="explain-meta-value">MTR-8821</div>
+        </div>
+        <div class="explain-meta-item">
+          <div class="explain-meta-label">Current Consumption</div>
+          <div class="explain-meta-value" style="color:#fca5a5">18 kWh</div>
+        </div>
+        <div class="risk-bar-wrap">
+          <div class="explain-meta-label">Risk Score</div>
+          <div class="explain-meta-value" style="color:#fca5a5">94%</div>
+          <div class="risk-bar-track"><div class="risk-bar-fill"></div></div>
+        </div>
+      </div>
+      <div class="explain-reasons">
+        <h4>Reasons Flagged by AI</h4>
+        <div class="reason-item"><span class="reason-check">✔</span><span class="reason-text">Consumption dropped by <strong style="color:#fca5a5">82%</strong> compared to previous 6 months average of 102 kWh.</span></div>
+        <div class="reason-item"><span class="reason-check">✔</span><span class="reason-text">Meter reading does <strong style="color:#fca5a5">not match</strong> billed units — discrepancy of 84 kWh detected.</span></div>
+        <div class="reason-item"><span class="reason-check">✔</span><span class="reason-text">Neighboring consumers in the same grid zone have a significantly higher average of <strong style="color:#fcd34d">380 kWh</strong>.</span></div>
+        <div class="reason-item"><span class="reason-check">✔</span><span class="reason-text">Similar fraud pattern detected in <strong style="color:#fca5a5">37 historical records</strong> matching tampered meter bypass signature.</span></div>
+      </div>
+      <div class="explain-conclusion">
+        <p>⚠ Conclusion: High probability of electricity theft via meter bypass. Immediate physical inspection and field audit recommended.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="tech" id="technology">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label">Built With</div>
+      <h2 class="section-title">Technology Stack</h2>
+      <p class="section-subtitle">Powered by cutting-edge IBM AI technologies and industry-standard tools.</p>
+    </div>
+    <div class="tech-grid">
+      <div class="tech-card reveal">
+        <div class="tech-icon-wrap" style="background:rgba(59,130,212,0.1)">
+          <svg fill="none" stroke="#3b82d4" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M9 9h6M9 12h6M9 15h4"></path></svg>
+        </div>
+        <h4>IBM Langflow</h4>
+        <p>Visual AI workflow orchestration and pipeline design</p>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-icon-wrap" style="background:rgba(124,92,216,0.1)">
+          <svg fill="none" stroke="#7c5cd8" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4l3 3"></path></svg>
+        </div>
+        <h4>IBM Orchestrate</h4>
+        <p>Intelligent agent automation and task orchestration</p>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-icon-wrap" style="background:rgba(16,185,129,0.1)">
+          <svg fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+        </div>
+        <h4>IBM Granite</h4>
+        <p>Explainable AI and natural language generation models</p>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-icon-wrap" style="background:rgba(245,158,11,0.1)">
+          <svg fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"><path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+        </div>
+        <h4>Python</h4>
+        <p>Core programming language for ML models and data pipelines</p>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-icon-wrap" style="background:rgba(239,68,68,0.1)">
+          <svg fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"></path></svg>
+        </div>
+        <h4>Machine Learning</h4>
+        <p>Isolation Forest, LSTM, Random Forest fraud models</p>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-icon-wrap" style="background:rgba(59,130,212,0.1)">
+          <svg fill="none" stroke="#3b82d4" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4"></path></svg>
+        </div>
+        <h4>Artificial Intelligence</h4>
+        <p>Deep learning, NLP, and intelligent anomaly detection</p>
+      </div>
+      <div class="tech-card reveal">
+        <div class="tech-icon-wrap" style="background:rgba(124,92,216,0.1)">
+          <svg fill="none" stroke="#7c5cd8" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        </div>
+        <h4>Data Analytics</h4>
+        <p>Pandas, NumPy, statistical analysis and visualization</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="benefits" id="benefits">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label">Value Proposition</div>
+      <h2 class="section-title">Key Benefits</h2>
+      <p class="section-subtitle">Tangible advantages for power distribution companies deploying our AI solution.</p>
+    </div>
+    <div class="cards-grid">
+      <div class="card benefit-card reveal">
+        <div class="card-icon bg-blue-10">
+          <svg fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+        </div>
+        <h3>Faster Fraud Detection</h3>
+        <p>AI processes thousands of bills in seconds, reducing investigation time from weeks to minutes.</p>
+      </div>
+      <div class="card benefit-card reveal">
+        <div class="card-icon bg-green-10">
+          <svg fill="none" stroke="#6ee7b7" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"></path></svg>
+        </div>
+        <h3>Reduced Revenue Loss</h3>
+        <p>Early detection and intervention recovers up to 62% of revenue lost through electricity theft.</p>
+      </div>
+      <div class="card benefit-card reveal">
+        <div class="card-icon bg-purple-10">
+          <svg fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"></path></svg>
+        </div>
+        <h3>Explainable AI Decisions</h3>
+        <p>Every fraud flag comes with clear, auditable reasoning understandable by non-technical staff.</p>
+      </div>
+      <div class="card benefit-card reveal">
+        <div class="card-icon bg-yellow-10">
+          <svg fill="none" stroke="#fcd34d" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M9 9h6M9 12h6M9 15h4"></path></svg>
+        </div>
+        <h3>Automated Analysis</h3>
+        <p>Fully automated pipeline eliminates the need for manual data review and analyst intervention.</p>
+      </div>
+      <div class="card benefit-card reveal">
+        <div class="card-icon bg-blue-10">
+          <svg fill="none" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"></path></svg>
+        </div>
+        <h3>Higher Billing Accuracy</h3>
+        <p>Detect billing mismatches and meter errors before invoices are issued to consumers.</p>
+      </div>
+      <div class="card benefit-card reveal">
+        <div class="card-icon bg-red-10">
+          <svg fill="none" stroke="#fca5a5" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+        </div>
+        <h3>Better Consumer Monitoring</h3>
+        <p>Continuous 24/7 monitoring of all consumer accounts with smart risk scoring and alerts.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="future" id="future">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label">Roadmap</div>
+      <h2 class="section-title">Future Enhancements</h2>
+      <p class="section-subtitle">Planned improvements to make the platform even more powerful and accessible.</p>
+    </div>
+    <div class="cards-grid">
+      <div class="card future-card reveal">
+        <div class="card-icon bg-blue-10">
+          <svg fill="none" stroke="#3b82d4" stroke-width="2" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+        </div>
+        <h3>Real-time Smart Meter Integration</h3>
+        <p>Direct IoT integration with smart meters for live consumption monitoring and instant fraud alerts.</p>
+      </div>
+      <div class="card future-card reveal">
+        <div class="card-icon bg-purple-10">
+          <svg fill="none" stroke="#7c5cd8" stroke-width="2" stroke-linecap="round"><rect x="5" y="2" width="14" height="20" rx="2"></rect><path d="M12 18h.01"></path></svg>
+        </div>
+        <h3>Mobile Application</h3>
+        <p>Native iOS and Android app for field engineers to access fraud alerts and consumer reports on-the-go.</p>
+      </div>
+      <div class="card future-card reveal">
+        <div class="card-icon bg-green-10">
+          <svg fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+        </div>
+        <h3>SMS &amp; Email Alerts</h3>
+        <p>Automated notifications sent to field engineers and managers when high-risk fraud cases are detected.</p>
+      </div>
+      <div class="card future-card reveal">
+        <div class="card-icon bg-yellow-10">
+          <svg fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+        </div>
+        <h3>Predictive Fraud Detection</h3>
+        <p>Proactively identify consumers likely to commit fraud before it occurs using predictive ML models.</p>
+      </div>
+      <div class="card future-card reveal">
+        <div class="card-icon bg-blue-10">
+          <svg fill="none" stroke="#3b82d4" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"></path></svg>
+        </div>
+        <h3>GIS-Based Consumer Mapping</h3>
+        <p>Geographic information system overlays to visualize fraud hotspots and grid vulnerability zones.</p>
+      </div>
+      <div class="card future-card reveal">
+        <div class="card-icon bg-purple-10">
+          <svg fill="none" stroke="#7c5cd8" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"></path></svg>
+        </div>
+        <h3>AI Chat Assistant</h3>
+        <p>Conversational AI interface powered by IBM Granite to answer queries and explain fraud reports.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="team" id="team">
+  <div class="container">
+    <div class="section-header" style="text-align:center">
+      <div class="section-label">The People</div>
+      <h2 class="section-title">Our Team</h2>
+      <p class="section-subtitle" style="margin:0 auto">Passionate AI engineers and data scientists building the future of utility fraud detection.</p>
+    </div>
+    <div class="team-grid">
+      <div class="team-card reveal">
+        <div class="team-avatar">AM</div>
+        <h4>Ahmed Malik</h4>
+        <div class="role">AI/ML Lead Engineer</div>
+        <div class="team-links">
+          <a href="#" class="team-link" title="Email">
+            <svg><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+          </a>
+          <a href="#" class="team-link" title="LinkedIn">
+            <svg><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path><circle cx="4" cy="4" r="2"></circle></svg>
+          </a>
+        </div>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-avatar" style="background:linear-gradient(135deg,#7c5cd8,#5b3fc4)">SK</div>
+        <h4>Sara Khan</h4>
+        <div class="role">Data Science Engineer</div>
+        <div class="team-links">
+          <a href="#" class="team-link" title="Email">
+            <svg><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+          </a>
+          <a href="#" class="team-link" title="LinkedIn">
+            <svg><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path><circle cx="4" cy="4" r="2"></circle></svg>
+          </a>
+        </div>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-avatar" style="background:linear-gradient(135deg,#10b981,#059669)">OR</div>
+        <h4>Omar Raza</h4>
+        <div class="role">IBM Platform Developer</div>
+        <div class="team-links">
+          <a href="#" class="team-link" title="Email">
+            <svg><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+          </a>
+          <a href="#" class="team-link" title="LinkedIn">
+            <svg><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path><circle cx="4" cy="4" r="2"></circle></svg>
+          </a>
+        </div>
+      </div>
+      <div class="team-card reveal">
+        <div class="team-avatar" style="background:linear-gradient(135deg,#f59e0b,#d97706)">FA</div>
+        <h4>Fatima Ali</h4>
+        <div class="role">UI/UX &amp; Frontend Dev</div>
+        <div class="team-links">
+          <a href="#" class="team-link" title="Email">
+            <svg><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+          </a>
+          <a href="#" class="team-link" title="LinkedIn">
+            <svg><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path><circle cx="4" cy="4" r="2"></circle></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="contact" id="contact">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label">Get in Touch</div>
+      <h2 class="section-title">Contact Us</h2>
+      <p class="section-subtitle">Interested in our AI fraud detection solution? Reach out and let's discuss how we can help your utility company.</p>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-form">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" />
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" />
+        </div>
+        <div class="form-group">
+          <label>Organization</label>
+          <input type="text" />
+        </div>
+        <div class="form-group">
+          <label>Message</label>
+          <textarea></textarea>
+        </div>
+        <button class="form-submit">Send Message →</button>
+      </div>
+      <div class="contact-info">
+        <div class="contact-info-card">
+          <div class="contact-icon bg-blue-10">
+            <svg fill="none" stroke="#3b82d4" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+          </div>
+          <div>
+            <h4>Email</h4>
+            <p>ai-fraud-detection@ibm-project.com</p>
+          </div>
+        </div>
+        <div class="contact-info-card">
+          <div class="contact-icon bg-purple-10">
+            <svg fill="none" stroke="#7c5cd8" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7a2 2 0 011.72 2.03z"></path></svg>
+          </div>
+          <div>
+            <h4>Phone</h4>
+            <p>+92 300 0000000</p>
+          </div>
+        </div>
+        <div class="contact-info-card">
+          <div class="contact-icon bg-green-10">
+            <svg fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          </div>
+          <div>
+            <h4>Location</h4>
+            <p>IBM Innovation Lab, Lahore, Pakistan</p>
+          </div>
+        </div>
+        <div class="contact-info-card">
+          <div class="contact-icon bg-yellow-10">
+            <svg fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          </div>
+          <div>
+            <h4>Response Time</h4>
+            <p>We respond within 24 hours on business days</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand-name">⚡ AI Fraud Detection</div>
+      <div class="footer-brand-desc">An IBM-powered AI agent for detecting electricity billing fraud, identifying consumption anomalies, and providing explainable insights to power distribution companies.</div>
+      <div class="footer-social">
+        <a href="#" title="GitHub">
+          <svg><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"></path></svg>
+        </a>
+        <a href="#" title="LinkedIn">
+          <svg><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path><circle cx="4" cy="4" r="2"></circle></svg>
+        </a>
+        <a href="#" title="Twitter">
+          <svg><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path></svg>
+        </a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h5>Quick Links</h5>
+      <ul>
+        <li><a href="#about">About Project</a></li>
+        <li><a href="#objectives">Objectives</a></li>
+        <li><a href="#dashboard">Dashboard</a></li>
+        <li><a href="#explain">Explainable AI</a></li>
+        <li><a href="#team">Team</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Technology</h5>
+      <ul>
+        <li><a href="#">IBM Langflow</a></li>
+        <li><a href="#">IBM Orchestrate</a></li>
+        <li><a href="#">IBM Granite</a></li>
+        <li><a href="#">Python / ML</a></li>
+        <li><a href="#">Data Analytics</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Project</h5>
+      <ul>
+        <li><a href="#">Documentation</a></li>
+        <li><a href="#">Source Code</a></li>
+        <li><a href="#">Presentation</a></li>
+        <li><a href="#">Demo Video</a></li>
+        <li><a href="#">Research Paper</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 AI Agent for Electricity Bill Fraud Detection. IBM Innovation Project.</p>
+    <p>Built with IBM Langflow · Orchestrate · Granite Models</p>
+  </div>
+  <div class="made-with">Made with IBM Bob</div>
+</footer>
+
+<style>
+  /* Inline scroll-reveal via CSS animation on class toggle */
+</style>
+
+
+</body>
+</html>
